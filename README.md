@@ -4,9 +4,32 @@
 
 ---
 
-## 1. Using the Released Executable
+## 1. Installation
 
-### Download & Make Executable
+### Quick Install (curl)
+
+Install `protobuilder` and automatically register `PROTOBUILDER_HOME` and `PATH` in your shell profile (`~/.zshrc`, `~/.bashrc`, `~/.bash_profile`, `~/.profile`, or Fish `config.fish`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh
+```
+
+Optional flags and environment variables:
+
+```bash
+# Install a specific release version:
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh -s -- --version v1.0.0
+
+# Install to a custom directory:
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh -s -- --dir ~/.local/bin
+
+# Skip modifying shell profile files:
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh -s -- --no-modify-path
+```
+
+> If a prebuilt release archive is not available for your OS/architecture, the installer automatically falls back to building from source with `cargo` if Rust is installed.
+
+### Manual Download & Make Executable
 
 1. Download the `protobuilder` binary (or release archive) from the [**GitHub Releases**](https://github.com/raenardcruz/protobuilder/releases) page.
 2. Grant execute permission and move it to a directory on your `PATH`:
