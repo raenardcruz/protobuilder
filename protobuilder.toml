@@ -1,0 +1,7 @@
+# protobuilder.toml — Project configuration for ProtoBuilder
+inputs    = ["examples/ecommerce.proto"]
+includes  = ["examples"]
+languages = ["all"]
+out_dir   = "./gen"
+grpc      = true
+messages  = true

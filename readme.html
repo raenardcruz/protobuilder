@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProtoBuilder v1.0.0 — Setup &amp; CLI User Guide</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-alt: #1f242d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-soft: rgba(88, 166, 255, 0.14);
+      --success: #3fb950;
+      --purple: #bc8cff;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+      padding-bottom: 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(135deg, #111827 0%, #0f172a 50%, #1e1b4b 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 3.5rem 1.5rem 2.75rem;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--accent);
+    }
+
+    .badge.green {
+      color: var(--success);
+      border-color: rgba(63, 185, 80, 0.4);
+      background: rgba(63, 185, 80, 0.1);
+    }
+
+    .badge.purple {
+      color: var(--purple);
+      border-color: rgba(188, 140, 255, 0.4);
+      background: rgba(188, 140, 255, 0.1);
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 840px;
+    }
+
+    nav.toc {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    nav.toc ul {
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+      gap: 0.4rem 1.5rem;
+      padding: 0.85rem 0;
+    }
+
+    nav.toc a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+
+    nav.toc a:hover {
+      color: var(--accent);
+    }
+
+    section {
+      margin-top: 2.8rem;
+    }
+
+    h2 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      color: #ffffff;
+    }
+
+    h3 {
+      font-size: 1.12rem;
+      font-weight: 600;
+      margin: 1.2rem 0 0.55rem;
+      color: var(--accent);
+    }
+
+    p {
+      margin-bottom: 0.9rem;
+      color: var(--text);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 1.25rem;
+      margin: 1.1rem 0;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.35rem;
+    }
+
+    .card.highlight {
+      border-color: rgba(88, 166, 255, 0.5);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    pre {
+      background: #090d13;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      line-height: 1.55;
+      margin: 0.75rem 0 1.15rem;
+      color: #d2a8ff;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.86em;
+      background: var(--surface-alt);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #79c0ff;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: #e6edf3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-alt);
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 0.83rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+    }
+
+    .callout.success {
+      border-left-color: var(--success);
+      background: rgba(63, 185, 80, 0.1);
+    }
+
+    ul.check-list {
+      list-style: none;
+      margin: 0.6rem 0;
+    }
+
+    ul.check-list li {
+      margin-bottom: 0.45rem;
+      padding-left: 1.4rem;
+      position: relative;
+    }
+
+    ul.check-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    footer {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="container">
+      <div class="badge-row">
+        <span class="badge green">Single Standalone Executable</span>
+        <span class="badge">15 Built-In Target Languages</span>
+        <span class="badge purple">Built-In gRPC Client &amp; Server Stubs</span>
+        <span class="badge">Zero External Dependencies</span>
+      </div>
+      <h1>ProtoBuilder v1.0.0</h1>
+      <p class="subtitle">
+        An all-in-one, zero-dependency Protocol Buffers &amp; gRPC compiler and multi-language code generator written in Rust.
+        Compile <code>.proto</code> schemas into 15 programming languages from a single self-contained executable.
+      </p>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="container">
+      <ul>
+        <li><a href="#setup">1. Setup &amp; Installation</a></li>
+        <li><a href="#quickstart">2. Quick Start Examples</a></li>
+        <li><a href="#cli-reference">3. CLI Commands &amp; Options</a></li>
+        <li><a href="#languages">4. Supported Languages (15)</a></li>
+        <li><a href="#config">5. Project Configuration &amp; Standard Types</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- 1. SETUP & INSTALLATION -->
+    <section id="setup">
+      <h2>1. Setup &amp; Installation</h2>
+      <p>
+        <code>protobuilder</code> is a pure-Rust project with <strong>zero external dependencies</strong>. It compiles into a single self-contained native binary that includes the <code>.proto</code> parser, type resolver, embedded standard types, and code generators for all 15 languages.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Step 1: Build the Executable</h3>
+          <pre><code>cd /Users/raenard/Documents/protobuilder
+cargo build --release</code></pre>
+          <p>The standalone binary is produced at:</p>
+          <pre><code>./target/release/protobuilder</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Step 2: Optional Global Installation</h3>
+          <p>Install into <code>~/.cargo/bin</code> or copy anywhere on your <code>PATH</code>:</p>
+          <pre><code># Install via Cargo:
+cargo install --path .
+
+# Or copy the single executable directly:
+cp ./target/release/protobuilder /usr/local/bin/protobuilder</code></pre>
+        </div>
+      </div>
+
+      <div class="callout success">
+        <strong>Ready Out of the Box:</strong> No plugins, runtimes, or header packages need to be installed. Everything required to parse and generate Protobuf messages and gRPC services for all 15 languages is built directly into the <code>protobuilder</code> binary.
+      </div>
+    </section>
+
+    <!-- 2. QUICK START EXAMPLES -->
+    <section id="quickstart">
+      <h2>2. Quick Start Examples</h2>
+
+      <div class="grid-2">
+        <div class="card highlight">
+          <h3>Generate All 15 Languages at Once</h3>
+          <p>Compiles both Protobuf message/enum types and gRPC client/server stubs for all 15 languages:</p>
+          <pre><code>protobuilder examples/ecommerce.proto -l all -o ./gen</code></pre>
+        </div>
+
+        <div class="card highlight">
+          <h3>Generate Specific Languages</h3>
+          <p>Pass a comma-separated list (or repeat <code>-l</code>) for the languages your project uses:</p>
+          <pre><code>protobuilder examples/ecommerce.proto -l rust,go,python,ts -o ./gen</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Compile an Entire Directory</h3>
+          <p>Pass a directory path to automatically discover all <code>.proto</code> files and resolve their imports:</p>
+          <pre><code>protobuilder ./examples -l rust,go,cpp,java -o ./gen</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Scaffold &amp; Build a Project</h3>
+          <p>Initialize a starter project with <code>protobuilder.toml</code> and build with zero flags:</p>
+          <pre><code>protobuilder init ./my-service
+cd ./my-service &amp;&amp; protobuilder build</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Inspect a Schema</h3>
+          <p>View parsed messages, fields, enums, and gRPC service RPC streaming modes:</p>
+          <pre><code>protobuilder inspect examples/ecommerce.proto</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Validate a Schema</h3>
+          <p>Check <code>.proto</code> files for syntax errors, duplicate field tags, or unresolved types:</p>
+          <pre><code>protobuilder validate ./examples</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. CLI COMMANDS & OPTIONS -->
+    <section id="cli-reference">
+      <h2>3. CLI Commands &amp; Options Reference</h2>
+
+      <h3>Commands</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>build</code></td>
+            <td>Compile <code>.proto</code> files or directories into target language files (default command when omitted).</td>
+            <td><code>protobuilder build api.proto -l rust,go -o ./gen</code></td>
+          </tr>
+          <tr>
+            <td><code>init [DIR]</code></td>
+            <td>Scaffold a starter project with a sample <code>protos/service.proto</code> and <code>protobuilder.toml</code>.</td>
+            <td><code>protobuilder init ./my-grpc-app</code></td>
+          </tr>
+          <tr>
+            <td><code>inspect &lt;PROTOS&gt;...</code></td>
+            <td>Display parsed packages, imports, options, enums, messages, fields, and gRPC services.</td>
+            <td><code>protobuilder inspect examples/ecommerce.proto</code></td>
+          </tr>
+          <tr>
+            <td><code>validate &lt;PROTOS&gt;...</code></td>
+            <td>Validate syntax, field numbers, reserved ranges, imports, and gRPC message types.</td>
+            <td><code>protobuilder validate ./examples</code></td>
+          </tr>
+          <tr>
+            <td><code>languages</code></td>
+            <td>List all 15 built-in languages, their short aliases, and generated file patterns.</td>
+            <td><code>protobuilder languages</code></td>
+          </tr>
+          <tr>
+            <td><code>help [TOPIC]</code></td>
+            <td>Display the CLI help guide or topic-specific help (<code>languages</code>, <code>config</code>).</td>
+            <td><code>protobuilder --help</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Options</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Option</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>-l, --lang &lt;LANGS&gt;</code></td>
+            <td>Target language(s) to generate. Accepts <code>all</code> (default), a comma-separated list like <code>-l rust,go,python,ts</code>, or repeated <code>-l</code> flags.</td>
+          </tr>
+          <tr>
+            <td><code>-o, --out &lt;DIR&gt;</code></td>
+            <td>Output directory (default: <code>./gen</code>). Writes directly to <code>&lt;DIR&gt;</code> when generating a single language, or into <code>&lt;DIR&gt;/&lt;lang&gt;/</code> subfolders when generating multiple languages.</td>
+          </tr>
+          <tr>
+            <td><code>-I, --include &lt;DIR&gt;</code></td>
+            <td>Add a directory to the <code>import</code> search path. Parent directories of input files and standard <code>google/protobuf/*.proto</code> types are resolved automatically.</td>
+          </tr>
+          <tr>
+            <td><code>-c, --config &lt;FILE&gt;</code></td>
+            <td>Load project configuration from a TOML file (auto-loads <code>./protobuilder.toml</code> when present).</td>
+          </tr>
+          <tr>
+            <td><code>--grpc-only</code></td>
+            <td>Generate only gRPC client &amp; server service stubs (skip message and enum definitions).</td>
+          </tr>
+          <tr>
+            <td><code>--messages-only</code></td>
+            <td>Generate only Protobuf message &amp; enum definitions (skip gRPC service stubs).</td>
+          </tr>
+          <tr>
+            <td><code>--clean</code></td>
+            <td>Clean the output directory before writing newly generated files.</td>
+          </tr>
+          <tr>
+            <td><code>--dry-run</code></td>
+            <td>Validate and run code generation in memory without writing files to disk.</td>
+          </tr>
+          <tr>
+            <td><code>-v, --verbose</code></td>
+            <td>Print every generated file path and byte count.</td>
+          </tr>
+          <tr>
+            <td><code>-q, --quiet</code></td>
+            <td>Suppress non-error output.</td>
+          </tr>
+          <tr>
+            <td><code>-h, --help</code></td>
+            <td>Show detailed help and usage examples.</td>
+          </tr>
+          <tr>
+            <td><code>-V, --version</code></td>
+            <td>Show version information.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. ALL 15 BUILT-IN LANGUAGES -->
+    <section id="languages">
+      <h2>4. All 15 Built-In Programming Languages</h2>
+      <p>
+        Every language generator is built directly into the <code>protobuilder</code> binary and generates both Protobuf data models and gRPC client/server stubs (Unary, Server-Streaming, Client-Streaming, and Bidirectional-Streaming):
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Language ID</th>
+            <th>CLI Aliases</th>
+            <th>Generated Files</th>
+            <th>Generated Capabilities</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>rust</code></td>
+            <td><code>rs</code>, <code>tonic</code>, <code>prost</code></td>
+            <td><code>&lt;name&gt;.rs</code></td>
+            <td>Structs, oneof enums, <code>#[repr(i32)]</code> enums, binary wire codec (<code>pb_wire</code>), <code>&lt;service&gt;_server</code> trait &amp; <code>&lt;service&gt;_client</code> stub.</td>
+          </tr>
+          <tr>
+            <td><code>go</code></td>
+            <td><code>golang</code>, <code>go-grpc</code></td>
+            <td><code>&lt;name&gt;.pb.go</code>, <code>&lt;name&gt;_grpc.pb.go</code></td>
+            <td>Go structs with protobuf/json tags, safe nil-receiver getters, enum maps, <code>&lt;Service&gt;Client</code>, <code>&lt;Service&gt;Server</code> &amp; <code>Unimplemented&lt;Service&gt;Server</code>.</td>
+          </tr>
+          <tr>
+            <td><code>python</code></td>
+            <td><code>py</code>, <code>pyi</code></td>
+            <td><code>&lt;name&gt;_pb2.py</code>, <code>&lt;name&gt;_pb2.pyi</code>, <code>&lt;name&gt;_pb2_grpc.py</code></td>
+            <td>Typed <code>@dataclass</code> messages, <code>IntEnum</code>, <code>SerializeToString</code>/<code>FromString</code>, PEP-484 <code>.pyi</code> stubs, <code>*Stub</code> &amp; <code>*Servicer</code>.</td>
+          </tr>
+          <tr>
+            <td><code>typescript</code></td>
+            <td><code>ts</code>, <code>grpc-web</code></td>
+            <td><code>&lt;name&gt;.pb.ts</code>, <code>&lt;name&gt;.grpc.ts</code></td>
+            <td>Interfaces (<code>I*</code>), classes with binary <code>encode</code>/<code>decode</code>, <code>GrpcTransport</code>, <code>I*Server</code> &amp; promise/AsyncIterable <code>*Client</code>.</td>
+          </tr>
+          <tr>
+            <td><code>javascript</code></td>
+            <td><code>js</code>, <code>node</code></td>
+            <td><code>&lt;name&gt;_pb.js</code>, <code>&lt;name&gt;_grpc_pb.js</code></td>
+            <td>CommonJS frozen enum objects, message classes with <code>serializeBinary</code>/<code>deserializeBinary</code>, gRPC service descriptors &amp; client classes.</td>
+          </tr>
+          <tr>
+            <td><code>cpp</code></td>
+            <td><code>c++</code>, <code>cxx</code>, <code>cc</code></td>
+            <td><code>&lt;name&gt;.pb.h</code>, <code>&lt;name&gt;.pb.cc</code>, <code>&lt;name&gt;.grpc.pb.h</code>, <code>&lt;name&gt;.grpc.pb.cc</code></td>
+            <td>C++17 classes, getters/setters, <code>enum class</code>, <code>SerializeAsString</code>/<code>ParseFromString</code>, <code>Service</code> virtual base &amp; <code>Stub</code> client.</td>
+          </tr>
+          <tr>
+            <td><code>java</code></td>
+            <td><code>java</code></td>
+            <td><code>&lt;OuterClass&gt;.java</code>, <code>&lt;Service&gt;Grpc.java</code></td>
+            <td>Outer class with fluent message classes, enums, <code>*ImplBase</code> server class &amp; <code>*BlockingStub</code> client class.</td>
+          </tr>
+          <tr>
+            <td><code>kotlin</code></td>
+            <td><code>kt</code></td>
+            <td><code>&lt;Name&gt;Kt.kt</code>, <code>&lt;Name&gt;GrpcKt.kt</code></td>
+            <td>Kotlin <code>data class</code> messages, enum classes, coroutine <code>*CoroutineImplBase</code> &amp; <code>*CoroutineStub</code> with <code>suspend fun</code> RPCs.</td>
+          </tr>
+          <tr>
+            <td><code>csharp</code></td>
+            <td><code>cs</code>, <code>c#</code>, <code>dotnet</code></td>
+            <td><code>&lt;Name&gt;.pb.cs</code>, <code>&lt;Name&gt;Grpc.cs</code></td>
+            <td>Nullable-enabled C# classes with properties, JSON/UTF-8 serialization, async <code>*Base</code> server &amp; <code>*Client</code> classes.</td>
+          </tr>
+          <tr>
+            <td><code>swift</code></td>
+            <td><code>swift</code></td>
+            <td><code>&lt;Name&gt;.pb.swift</code>, <code>&lt;Name&gt;.grpc.swift</code></td>
+            <td><code>Codable</code>, <code>Sendable</code>, <code>Equatable</code> structs &amp; enums, Swift Concurrency <code>*AsyncProvider</code> protocol &amp; <code>*AsyncClient</code>.</td>
+          </tr>
+          <tr>
+            <td><code>dart</code></td>
+            <td><code>flutter</code></td>
+            <td><code>&lt;name&gt;.pb.dart</code>, <code>&lt;name&gt;.pbenum.dart</code>, <code>&lt;name&gt;.pbgrpc.dart</code></td>
+            <td>Null-safe Dart classes, enhanced enums, <code>toJson</code>/<code>writeToBuffer</code>, <code>Future</code>/<code>Stream</code> <code>*ServiceBase</code> &amp; <code>*Client</code>.</td>
+          </tr>
+          <tr>
+            <td><code>php</code></td>
+            <td><code>php</code></td>
+            <td><code>&lt;Name&gt;Pb.php</code>, <code>&lt;Service&gt;GrpcClient.php</code></td>
+            <td>PHP 8+ strict-typed message classes, enum constants, <code>*ServiceInterface</code> &amp; <code>*GrpcClient</code>.</td>
+          </tr>
+          <tr>
+            <td><code>ruby</code></td>
+            <td><code>rb</code>, <code>rbs</code></td>
+            <td><code>&lt;name&gt;_pb.rb</code>, <code>&lt;name&gt;_services_pb.rb</code>, <code>&lt;name&gt;_pb.rbs</code></td>
+            <td>Ruby message classes, <code>to_h</code>/<code>to_proto</code>, gRPC <code>Service</code> &amp; <code>Stub</code> classes, plus Ruby 3 <code>.rbs</code> type signatures.</td>
+          </tr>
+          <tr>
+            <td><code>objc</code></td>
+            <td><code>objective-c</code>, <code>objectivec</code></td>
+            <td><code>&lt;Name&gt;.pbobjc.h</code>, <code>&lt;Name&gt;.pbobjc.m</code>, <code>&lt;Name&gt;.pbrpc.h</code>, <code>&lt;Name&gt;.pbrpc.m</code></td>
+            <td>Foundation <code>NS_ENUM</code>, <code>@interface</code> properties, <code>*Service</code> protocol &amp; async block-based <code>*Client</code>.</td>
+          </tr>
+          <tr>
+            <td><code>c</code></td>
+            <td><code>nanopb</code></td>
+            <td><code>&lt;name&gt;.pb.h</code>, <code>&lt;name&gt;.pb.c</code></td>
+            <td>Zero-allocation ANSI/C11 structs, <code>typedef enum</code>, initializer functions, and gRPC function-pointer VTable struct.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 5. CONFIG & STANDARD TYPES -->
+    <section id="config">
+      <h2>5. Project Configuration (<code>protobuilder.toml</code>) &amp; Built-In Standard Types</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Sample <code>protobuilder.toml</code></h3>
+          <p>When present in the working directory, running <code>protobuilder</code> or <code>protobuilder build</code> automatically reads this file:</p>
+          <pre><code># protobuilder.toml
+inputs    = ["examples/ecommerce.proto"]
+includes  = ["examples"]
+languages = ["all"]
+out_dir   = "./gen"
+grpc      = true
+messages  = true</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>Built-In Standard Protobuf Imports</h3>
+          <p>The following standard <code>google/protobuf/*.proto</code> imports are embedded inside the binary and automatically resolved:</p>
+          <ul class="check-list">
+            <li><code>google/protobuf/timestamp.proto</code> (<code>Timestamp</code>)</li>
+            <li><code>google/protobuf/duration.proto</code> (<code>Duration</code>)</li>
+            <li><code>google/protobuf/empty.proto</code> (<code>Empty</code>)</li>
+            <li><code>google/protobuf/wrappers.proto</code> (<code>StringValue</code>, <code>Int64Value</code>, etc.)</li>
+            <li><code>google/protobuf/any.proto</code> (<code>Any</code>)</li>
+            <li><code>google/protobuf/field_mask.proto</code> (<code>FieldMask</code>)</li>
+            <li><code>google/protobuf/struct.proto</code> (<code>Struct</code>, <code>Value</code>, <code>ListValue</code>)</li>
+            <li><code>google/protobuf/descriptor.proto</code> (<code>FileDescriptorSet</code>)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      ProtoBuilder v1.0.0 • Standalone Multi-Language Protocol Buffers &amp; gRPC Generator
+    </footer>
+  </main>
+
+</body>
+</html>

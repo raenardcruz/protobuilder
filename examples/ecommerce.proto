@@ -1,0 +1,84 @@
+syntax = "proto3";
+package acme.commerce.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/acme/commerce/v1;commercev1";
+option java_package = "com.acme.commerce.v1";
+option java_outer_classname = "CommerceProto";
+option csharp_namespace = "Acme.Commerce.V1";
+option objc_class_prefix = "ACM";
+option php_namespace = "Acme\\Commerce\\V1";
+option ruby_package = "Acme::Commerce::V1";
+
+// Order fulfillment status across the commerce pipeline.
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_CREATED = 1;
+  ORDER_STATUS_PAID = 2;
+  ORDER_STATUS_FULFILLED = 3;
+  ORDER_STATUS_CANCELLED = 4;
+}
+
+// Physical or digital product item in an order.
+message LineItem {
+  string product_id = 1;
+  string title = 2;
+  int32 quantity = 3;
+  double unit_price = 4;
+  repeated string discount_codes = 5;
+}
+
+// Customer shipping destination.
+message ShippingAddress {
+  string recipient_name = 1;
+  string street_line1 = 2;
+  string city = 3;
+  string postal_code = 4;
+  string country_code = 5;
+}
+
+// Request payload to place a new order.
+message PlaceOrderRequest {
+  string customer_id = 1;
+  repeated LineItem items = 2;
+  ShippingAddress shipping_address = 3;
+  map<string, string> attributes = 4;
+  oneof payment_instrument {
+    string credit_card_token = 5;
+    string wire_transfer_ref = 6;
+    string wallet_address = 7;
+  }
+  reserved 100 to 110;
+}
+
+// Order receipt and tracking response.
+message OrderReceipt {
+  string order_id = 1;
+  OrderStatus status = 2;
+  double grand_total = 3;
+  bool express_delivery = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// Query filter for streaming order updates.
+message OrderWatchFilter {
+  string customer_id = 1;
+  repeated OrderStatus statuses = 2;
+}
+
+// End-to-end e-commerce gRPC service demonstrating all 4 gRPC streaming modes.
+service CommerceService {
+  // Unary RPC: Submit a single order and receive an immediate receipt.
+  rpc PlaceOrder (PlaceOrderRequest) returns (OrderReceipt);
+
+  // Server-Streaming RPC: Subscribe to real-time order status updates.
+  rpc WatchOrders (OrderWatchFilter) returns (stream OrderReceipt);
+
+  // Client-Streaming RPC: Stream a batch of orders and receive a consolidated receipt.
+  rpc UploadOrderBatch (stream PlaceOrderRequest) returns (OrderReceipt);
+
+  // Bidirectional-Streaming RPC: Real-time interactive checkout & inventory sync.
+  rpc LiveCheckoutChannel (stream PlaceOrderRequest) returns (stream OrderReceipt);
+}
