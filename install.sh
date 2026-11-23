@@ -150,7 +150,8 @@ detect_platform() {
             OS="linux"
             ;;
         MINGW*|MSYS*|CYGWIN*)
-            err "Windows shell detected ($raw_os). Please download the release directly or build with Cargo."
+            err "Windows shell detected ($raw_os). Use PowerShell to install on Windows:
+  irm https://raw.githubusercontent.com/${REPO}/main/install.ps1 | iex"
             ;;
         *)
             err "Unsupported operating system: $raw_os"

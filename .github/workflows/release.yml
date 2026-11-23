@@ -1,0 +1,191 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build and attach binaries to (e.g. v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Run cargo test
+        run: cargo test --locked
+
+  build:
+    name: Build (${{ matrix.os }}-${{ matrix.arch }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos
+            arch: arm64
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            bin_ext: ""
+            archive_ext: tar.gz
+          - os: macos
+            arch: x86_64
+            runner: macos-latest
+            target: x86_64-apple-darwin
+            bin_ext: ""
+            archive_ext: tar.gz
+          - os: linux
+            arch: x86_64
+            runner: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            bin_ext: ""
+            archive_ext: tar.gz
+          - os: linux
+            arch: arm64
+            runner: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            bin_ext: ""
+            archive_ext: tar.gz
+          - os: windows
+            arch: x86_64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin_ext: ".exe"
+            archive_ext: zip
+
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Determine release tag
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "value=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Rust target
+        shell: bash
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Install Linux cross-compilation tools
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-musl" ]; then
+            sudo apt-get install -y musl-tools
+          elif [ "${{ matrix.target }}" = "aarch64-unknown-linux-musl" ]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+          fi
+
+      - name: Build release binary
+        shell: bash
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Smoke test native binary
+        if: (matrix.os == 'macos' && matrix.arch == 'arm64') || (matrix.os == 'linux' && matrix.arch == 'x86_64') || matrix.os == 'windows'
+        shell: bash
+        run: ./target/${{ matrix.target }}/release/protobuilder${{ matrix.bin_ext }} --version
+
+      - name: Package release archive (tar.gz)
+        if: matrix.archive_ext == 'tar.gz'
+        shell: bash
+        env:
+          COPYFILE_DISABLE: "1"
+        run: |
+          TAG="${{ steps.tag.outputs.value }}"
+          ARCHIVE="protobuilder-${TAG}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz"
+          STAGE="dist/stage"
+          mkdir -p "${STAGE}"
+          cp "target/${{ matrix.target }}/release/protobuilder" "${STAGE}/protobuilder"
+          chmod +x "${STAGE}/protobuilder"
+          cp README.md readme.html protobuilder.toml "${STAGE}/"
+          cp -r examples "${STAGE}/examples"
+          tar -czf "dist/${ARCHIVE}" -C "${STAGE}" .
+          rm -rf "${STAGE}"
+
+      - name: Package release archive (zip)
+        if: matrix.archive_ext == 'zip'
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.tag.outputs.value }}"
+          $archive = "protobuilder-${tag}-${{ matrix.os }}-${{ matrix.arch }}.zip"
+          $stage = "dist/stage"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "target/${{ matrix.target }}/release/protobuilder.exe" "$stage/protobuilder.exe"
+          Copy-Item "README.md", "readme.html", "protobuilder.toml" "$stage/"
+          Copy-Item -Recurse "examples" "$stage/examples"
+          Compress-Archive -Path "$stage/*" -DestinationPath "dist/$archive" -Force
+          Remove-Item -Recurse -Force $stage
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: protobuilder-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/protobuilder-*
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine release tag
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "value=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS.txt
+        shell: bash
+        working-directory: dist
+        run: |
+          sha256sum protobuilder-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create or update GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.tag.outputs.value }}"
+          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" dist/* --repo "${GITHUB_REPOSITORY}" --clobber
+          else
+            gh release create "${TAG}" dist/* \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "ProtoBuilder ${TAG}" \
+              --generate-notes
+          fi
