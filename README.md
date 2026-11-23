@@ -4,9 +4,45 @@
 
 ---
 
-## 1. Using the Released Executable
+## 1. Installation
 
-### Download & Make Executable
+### Quick Install
+
+**macOS & Linux (`curl`)** — installs `protobuilder` and registers `PROTOBUILDER_HOME` and `PATH` in your shell profile (`~/.zshrc`, `~/.bashrc`, `~/.bash_profile`, `~/.profile`, or Fish `config.fish`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh
+```
+
+**Windows (PowerShell)** — installs `protobuilder.exe` and registers `PROTOBUILDER_HOME` and User `PATH`:
+
+```powershell
+irm https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.ps1 | iex
+```
+
+Optional flags and environment variables:
+
+```bash
+# macOS / Linux — pin a specific release version:
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh -s -- --version v1.0.0
+
+# macOS / Linux — install to a custom directory:
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh -s -- --dir ~/.local/bin
+
+# macOS / Linux — skip modifying shell profile files:
+curl -fsSL https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.sh | sh -s -- --no-modify-path
+```
+
+```powershell
+# Windows (PowerShell) — pin a version or custom directory via environment variables:
+$env:PROTOBUILDER_VERSION = "v1.0.0"
+$env:PROTOBUILDER_INSTALL_DIR = "$HOME\.local\bin"
+irm https://raw.githubusercontent.com/raenardcruz/protobuilder/main/install.ps1 | iex
+```
+
+> Prebuilt release archives are produced for **macOS** (`arm64`, `x86_64`), **Linux** (`x86_64`, `arm64`), and **Windows** (`x86_64`) via GitHub Actions. If a prebuilt archive is unavailable for your OS/architecture, both installers automatically fall back to building from source with `cargo` if Rust is installed.
+
+### Manual Download & Make Executable
 
 1. Download the `protobuilder` binary (or release archive) from the [**GitHub Releases**](https://github.com/raenardcruz/protobuilder/releases) page.
 2. Grant execute permission and move it to a directory on your `PATH`:
